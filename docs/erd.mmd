@@ -1,0 +1,25 @@
+---
+id: f679a705-8fc6-44b0-ae89-ff1f0a432203
+---
+erDiagram
+    Expense {
+        uuid id PK
+        string(100) description
+        bool isActive
+        number categoryId FK
+        timestamp createdOn
+        string(100) createdBy
+        timestamp modifiedOn "nullable"
+        string(100) modifiedBy "nullable"
+    }
+
+    Category {
+        number id PK
+        string(100) name
+        timestamp createdOn
+        string(100) createdBy
+        timestamp modifiedOn "nullable"
+        string(100) modifiedBy "nullable"
+    }
+
+    Expense }o--|| Category : "belongs to"
