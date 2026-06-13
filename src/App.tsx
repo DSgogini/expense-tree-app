@@ -1,6 +1,7 @@
 import { useEffect, useMemo, type FormEvent } from "react";
 import { useAuthApplication } from "./application/auth/useAuthApplication";
 import { useExpenseApplication } from "./application/expense/useExpenseApplication";
+import { useUserApplication } from "./application/user/useUserApplication";
 
 function App() {
   const {
@@ -26,6 +27,12 @@ function App() {
     loadExpenses,
     submitExpense,
   } = useExpenseApplication();
+
+  const {
+    users,
+    loadingUsers,
+    userError,
+  } = useUserApplication(user);
 
   const matchedCategories = useMemo(() => {
     const search = category.trim().toLowerCase();
@@ -70,12 +77,21 @@ function App() {
       return;
     }
 
-    const createdBy = user.email?.trim() || user.uid;
-    await submitExpense(createdBy);
+    if (!user.uid) {
+      setAuthError("Unable to determine user ID. Please sign in again.");
+      return;
+    }
+
+    await submitExpense(user.uid);
   };
 
-  const currentError = authError || expenseError;
-  const loading = authLoading || expenseLoading;
+  const currentError = authError || expenseError || userError;
+  const loading = authLoading || expenseLoading || loadingUsers;
+
+  const userNameById = useMemo(
+    () => new Map(users.map((currentUser) => [currentUser.id, currentUser.displayName])),
+    [users]
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">
@@ -186,7 +202,9 @@ function App() {
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div>
                             <p className="font-semibold text-slate-900">{expense.description}</p>
-                            <p className="text-sm text-slate-500">Added by: {expense.createdBy}</p>
+                            <p className="text-sm text-slate-500">
+                              Added by: {userNameById.get(expense.createdBy) ?? expense.createdBy}
+                            </p>
                             <p className="text-sm text-slate-500">
                               Category: {categories.find((category) => category.id === expense.categoryId)?.name || expense.categoryId}
                             </p>

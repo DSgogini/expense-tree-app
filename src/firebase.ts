@@ -8,18 +8,24 @@ import {
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+const env = import.meta.env as Record<string, string | undefined>;
+
 const firebaseConfig = {
-  apiKey: "AIzaSyBxxwobPwBF4tKwPpSPq_l2uy787fN7VJE",
-  authDomain: "moneyplant-88f7d.firebaseapp.com",
-  databaseURL: "https://moneyplant-88f7d.firebaseio.com",
-  projectId: "moneyplant-88f7d",
-  storageBucket: "moneyplant-88f7d.firebasestorage.app",
-  messagingSenderId: "623898566949",
-  appId: "1:623898566949:web:6391e3aaff64fc5edf7acc",
-  measurementId: "G-NXXRDFWMCY",
+  apiKey: env.VITE_FIREBASE_API_KEY,
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: env.VITE_FIREBASE_DATABASE_URL,
+  projectId: env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: env.VITE_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
+const missingKey = Object.entries(firebaseConfig).find(([, value]) => !value);
+if (missingKey) {
+  throw new Error(`Missing Firebase env variable: ${missingKey[0]}`);
+}
+
+const app = initializeApp(firebaseConfig as Record<string, string>);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const db = getFirestore(app);

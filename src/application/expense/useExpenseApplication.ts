@@ -39,7 +39,6 @@ export const useExpenseApplication = () => {
       setExpenses(docs);
     } catch (err) {
       console.error("Error loading expenses:", err);
-      setError("Unable to load expenses.");
     } finally {
       setLoading(false);
     }
