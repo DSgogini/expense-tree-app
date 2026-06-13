@@ -1,4 +1,4 @@
-import { useEffect, type FormEvent } from "react";
+import { useEffect, useMemo, type FormEvent } from "react";
 import { useAuthApplication } from "./application/auth/useAuthApplication";
 import { useExpenseApplication } from "./application/expense/useExpenseApplication";
 
@@ -15,20 +15,28 @@ function App() {
   const {
     description,
     amount,
-    selectedCategory,
+    category,
     categories,
-    newCategoryName,
     expenses,
     loading: expenseLoading,
     error: expenseError,
     setDescription,
     setAmount,
-    setSelectedCategory,
-    setNewCategoryName,
+    setCategory,
     loadExpenses,
     submitExpense,
-    addCategory,
   } = useExpenseApplication();
+
+  const matchedCategories = useMemo(() => {
+    const search = category.trim().toLowerCase();
+    if (!search) {
+      return [];
+    }
+
+    return categories.filter((existing) =>
+      existing.name.toLowerCase().includes(search)
+    );
+  }, [category, categories]);
 
   useEffect(() => {
     if (user) {
@@ -72,11 +80,7 @@ function App() {
   return (
     <div className="container mx-auto p-4">
       <div className="min-h-screen bg-gray-100 rounded-lg p-6 shadow-sm">
-        <header className="mb-6">
-          <h1 className="text-4xl font-bold text-blue-600">Expense Tree App</h1>
-          <p className="text-gray-700 mt-1">
-            Sign in with Google to access your Firebase-backed expense domain.
-          </p>
+        <header className="">
         </header>
 
         {loading && <p className="text-gray-600">Loading...</p>}
@@ -112,7 +116,6 @@ function App() {
         {user && (
           <div className="grid gap-6 md:grid-cols-[1fr_1fr]">
             <section className="rounded bg-white p-4 shadow-sm">
-              <h2 className="mb-4 text-2xl font-semibold">Add Expense</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Description</label>
@@ -137,53 +140,35 @@ function App() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2"
-                  >
-                    {categories.length === 0 ? (
-                      <option value="" disabled>
-                        Add a category first
-                      </option>
-                    ) : (
-                      categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">New category</label>
-                  <div className="flex gap-2">
-                    <input
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
-                      className="w-full rounded border border-gray-300 px-3 py-2"
-                      placeholder="Add category name"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!user) {
-                          setAuthError("You must be signed in to add a category.");
-                          return;
-                        }
-                        addCategory(user.email?.trim() || user.uid);
-                      }}
-                      className="rounded bg-gray-700 px-4 py-2 text-white hover:bg-gray-800"
-                    >
-                      Add
-                    </button>
-                  </div>
+                  <input
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                    placeholder="Type a category name"
+                  />
+                  <p className="mt-2 text-sm text-gray-500">
+                    Existing categories are suggested while typing; a new category will be created when the expense is saved.
+                  </p>
+                  {matchedCategories.length > 0 && (
+                    <div className="mt-2 grid gap-1">
+                      {matchedCategories.slice(0, 5).map((suggestion) => (
+                        <button
+                          key={suggestion.id}
+                          type="button"
+                          className="text-left text-sm text-gray-700 underline hover:text-gray-900"
+                          onClick={() => setCategory(suggestion.name)}
+                        >
+                          {suggestion.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <button
                   type="submit"
                   className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                 >
-                  Save Expense
+                  Save
                 </button>
               </form>
             </section>
@@ -201,7 +186,7 @@ function App() {
                       <div className="flex items-center justify-between">
                         <div>
                           <strong>{expense.description}</strong>
-                              <div className="text-sm text-gray-500">Created by {expense.createdBy}</div>
+                          <div className="text-sm text-gray-500">Created by {expense.createdBy}</div>
                           <div className="text-sm text-gray-500">
                             Category: {categories.find((category) => category.id === expense.categoryId)?.name || expense.categoryId}
                           </div>

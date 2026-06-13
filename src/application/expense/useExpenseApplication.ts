@@ -15,8 +15,7 @@ const categoryRepository: CategoryRepository = new CategoryFirestoreRepository()
 export const useExpenseApplication = () => {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [newCategoryName, setNewCategoryName] = useState("");
+  const [category, setCategory] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(false);
@@ -26,13 +25,10 @@ export const useExpenseApplication = () => {
     try {
       const docs = await fetchCategoriesUseCase(categoryRepository);
       setCategories(docs);
-      if (docs.length > 0 && !selectedCategory) {
-        setSelectedCategory(docs[0].id);
-      }
     } catch (err) {
       console.error("Error loading categories:", err);
     }
-  }, [selectedCategory]);
+  }, []);
 
   const loadExpenses = useCallback(async () => {
     setError("");
@@ -53,101 +49,80 @@ export const useExpenseApplication = () => {
     void loadCategories();
   }, [loadCategories]);
 
-  const addCategory = useCallback(
-    async (createdBy: string) => {
-      const trimmedName = newCategoryName.trim();
-      if (!trimmedName) {
-        setError("Enter a category name before saving.");
-        return;
-      }
-
-      if (categories.some((category) => category.name.toLowerCase() === trimmedName.toLowerCase())) {
-        const existing = categories.find((category) => category.name.toLowerCase() === trimmedName.toLowerCase());
-        if (existing) {
-          setSelectedCategory(existing.id);
-        }
-        setNewCategoryName("");
-        return;
-      }
-
-      try {
-        setError("");
-        setLoading(true);
-
-        const category = Category.createNew({ name: trimmedName, createdBy });
-        await addCategoryUseCase(categoryRepository, category);
-        setNewCategoryName("");
-        await loadCategories();
-        setSelectedCategory(category.id);
-      } catch (err) {
-        console.error("Error adding category:", err);
-        setError("Unable to save category. Try again later.");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [newCategoryName, categories, loadCategories]
-  );
-
   const submitExpense = useCallback(
     async (createdBy: string) => {
-      if (!description.trim() || !amount.trim()) {
-        setError("Please provide both description and amount.");
+      const trimmedDescription = description.trim();
+      const trimmedCategory = category.trim();
+      const numericAmount = Number(amount);
+
+      if (!trimmedDescription) {
+        setError("Description is required.");
         return;
       }
 
-      const parsedAmount = Number(amount);
-      if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+      if (!trimmedCategory) {
+        setError("Category is required.");
+        return;
+      }
+
+      if (Number.isNaN(numericAmount) || numericAmount <= 0) {
         setError("Enter a valid amount greater than 0.");
         return;
       }
 
-      if (!selectedCategory.trim()) {
-        setError("Select a category before saving.");
-        return;
-      }
-
       try {
         setError("");
         setLoading(true);
 
+        let categoryId = categories.find(
+          (existing) => existing.name.toLowerCase() === trimmedCategory.toLowerCase()
+        )?.id;
+
+        if (!categoryId) {
+          const newCategory = Category.createNew({
+            name: trimmedCategory,
+            createdBy,
+          });
+          await addCategoryUseCase(categoryRepository, newCategory);
+          await loadCategories();
+          categoryId = newCategory.id;
+        }
+
         const expense = Expense.createNew({
-          description: description.trim(),
-          amount: parsedAmount,
-          categoryId: selectedCategory.trim(),
+          description: trimmedDescription,
+          amount: numericAmount,
+          categoryId,
           createdBy,
         });
 
         await addExpenseUseCase(expenseRepository, expense);
         setDescription("");
         setAmount("");
+        setCategory("");
         await loadExpenses();
       } catch (err) {
-        console.error("Error submitting expense:", err);
+        console.error("Error saving expense:", err);
         setError("Unable to save expense. Try again later.");
       } finally {
         setLoading(false);
       }
     },
-    [description, amount, selectedCategory, loadExpenses]
+    [description, amount, category, categories, loadExpenses, loadCategories]
   );
 
   return {
     description,
     amount,
-    selectedCategory,
+    category,
     categories,
-    newCategoryName,
     expenses,
     loading,
     error,
     setDescription,
     setAmount,
-    setSelectedCategory,
-    setNewCategoryName,
+    setCategory,
     setError,
     loadExpenses,
     submitExpense,
-    addCategory,
   };
 };
