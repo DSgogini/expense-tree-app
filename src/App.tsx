@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useAuthApplication } from "./application/auth/useAuthApplication";
 import { useExpenseApplication } from "./application/expense/useExpenseApplication";
 import { useUserApplication } from "./application/user/useUserApplication";
@@ -90,9 +90,78 @@ function App() {
   const currentError = authError || expenseError || userError;
   const loading = authLoading || expenseLoading || loadingUsers;
 
+  const [monthOffset, setMonthOffset] = useState(0);
+
   const userNameById = useMemo(
     () => new Map(users.map((currentUser) => [currentUser.id, currentUser.displayName])),
     [users]
+  );
+
+  const viewMonthDate = useMemo(() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() + monthOffset);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, [monthOffset]);
+
+  const formatMonthHeading = (date: Date) =>
+    date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+  const getWeekStart = (value: Date) => {
+    const date = new Date(value);
+    const day = date.getDay();
+    const diff = (day + 6) % 7;
+    date.setDate(date.getDate() - diff);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  };
+
+  const formatWeekHeading = (weekStart: Date) => {
+    const now = new Date();
+    const currentWeekStart = getWeekStart(now);
+    const lastWeekStart = new Date(currentWeekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+
+    if (weekStart.getTime() === currentWeekStart.getTime()) {
+      return "This week";
+    }
+    if (weekStart.getTime() === lastWeekStart.getTime()) {
+      return "Last week";
+    }
+
+    return `Week of ${weekStart.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+  };
+
+  const formatExpenseDate = (date: Date) => ({
+    day: date.toLocaleDateString(undefined, { day: "numeric" }),
+    month: date.toLocaleDateString(undefined, { month: "short" }),
+    time: date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }),
+  });
+
+  const expensesForMonth = useMemo(
+    () =>
+      expenses.filter((expense) => {
+        const date = expense.expenseDate ?? expense.createdDate;
+        return date.getMonth() === viewMonthDate.getMonth() && date.getFullYear() === viewMonthDate.getFullYear();
+      }),
+    [expenses, viewMonthDate]
+  );
+
+  const groupedExpenses = useMemo(() => {
+    return expensesForMonth.reduce((groups, expense) => {
+      const weekKey = getWeekStart(expense.expenseDate ?? expense.createdDate).toISOString();
+      if (!groups[weekKey]) {
+        groups[weekKey] = [];
+      }
+      groups[weekKey].push(expense);
+      return groups;
+    }, {} as Record<string, typeof expenses>);
+  }, [expensesForMonth]);
+
+  const sortedWeekKeys = useMemo(
+    () =>
+      Object.keys(groupedExpenses).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()),
+    [groupedExpenses]
   );
 
   return (
@@ -161,6 +230,9 @@ function App() {
                       className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       type="datetime-local"
                     />
+                    <p className="mt-2 text-sm text-slate-500">
+                      Selected date: {expenseDate ? new Date(expenseDate).toLocaleString() : "Current time will be used"}
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700">Category</label>
@@ -201,33 +273,90 @@ function App() {
               </section>
 
               <section className="rounded-3xl bg-slate-50 p-6 shadow-sm">
-                <h2 className="mb-4 text-2xl font-semibold text-slate-900">Expenses</h2>
+                <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-slate-900">Expenses</h2>
+                    <p className="text-sm text-slate-500">Showing expenses for {formatMonthHeading(viewMonthDate)}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {monthOffset !== 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setMonthOffset(0)}
+                        className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        Back to current month
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setMonthOffset((prev) => prev - 1)}
+                      className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-200"
+                    >
+                      ← Previous month
+                    </button>
+                  </div>
+                </div>
+
                 {loading ? (
                   <p className="text-slate-600">Loading expenses...</p>
-                ) : expenses.length === 0 ? (
-                  <p className="text-slate-600">No expenses yet. Add one above.</p>
+                ) : expensesForMonth.length === 0 ? (
+                  <p className="text-slate-600">No expenses for this month. Add one above or switch to a different month.</p>
                 ) : (
-                  <ul className="space-y-3">
-                    {expenses.map((expense) => (
-                      <li key={expense.id} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
-                            <p className="font-semibold text-slate-900">{expense.description}</p>
-                            <p className="text-sm text-slate-500">
-                              Added by: {userNameById.get(expense.createdBy) ?? expense.createdBy}
-                            </p>
-                            <p className="text-sm text-slate-500">
-                              Category: {categories.find((category) => category.id === expense.categoryId)?.name || expense.categoryId}
-                            </p>
+                  <div className="space-y-6">
+                    {sortedWeekKeys.map((weekKey) => {
+                      const weekStart = new Date(weekKey);
+                      const weekLabel = formatWeekHeading(weekStart);
+                      const group = groupedExpenses[weekKey] ?? [];
+
+                      return (
+                        <div key={weekKey} className="space-y-4">
+                          <div className="sticky top-6 z-10 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm shadow-slate-200/50">
+                            {weekLabel}
                           </div>
-                          <span className="text-lg font-semibold text-slate-800">₹{expense.amount.toFixed(2)}</span>
+                          <div className="space-y-4">
+                            {group.map((expense) => {
+                              const expenseDateValue = expense.expenseDate ?? expense.createdDate;
+                              const formattedDate = formatExpenseDate(expenseDateValue);
+                              const categoryName = categories.find((item) => item.id === expense.categoryId)?.name || "Uncategorized";
+
+                              return (
+                                <article
+                                  key={expense.id}
+                                  className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
+                                >
+                                  <div className="flex items-center gap-4 p-4">
+                                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-slate-900 text-center text-white">
+                                      <div>
+                                        <span className="block text-2xl font-semibold leading-none">{formattedDate.day}</span>
+                                        <span className="block text-[11px] uppercase tracking-[0.24em] text-slate-300">{formattedDate.month}</span>
+                                      </div>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center justify-between gap-4">
+                                        <p className="min-w-0 truncate text-lg font-semibold text-slate-900">{expense.description}</p>
+                                        <div className="flex flex-col items-end justify-center text-right">
+                                          <p className="text-lg font-bold text-slate-900">₹{expense.amount.toFixed(2)}</p>
+                                        </div>
+                                      </div>
+
+                                      <div className="mt-2 flex items-center justify-between text-sm text-slate-500">
+                                        <div className="flex items-center gap-2">
+                                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{categoryName}</span>
+                                          <span className="truncate">• By {userNameById.get(expense.createdBy) ?? expense.createdBy}</span>
+                                        </div>
+                                        <div className="text-right text-sm text-slate-500">{formattedDate.time}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </article>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <div className="mt-3 text-sm text-slate-500">
-                          {expense.expenseDate.toLocaleString()}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                      );
+                    })}
+                  </div>
                 )}
               </section>
             </div>

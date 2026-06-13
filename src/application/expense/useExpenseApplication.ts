@@ -12,11 +12,18 @@ import { Category } from "../../domain/category/Category";
 const expenseRepository = new ExpenseFirestoreRepository();
 const categoryRepository: CategoryRepository = new CategoryFirestoreRepository();
 
+const nowLocalDateTime = (): string => {
+  const now = new Date();
+  const tzOffset = now.getTimezoneOffset() * 60000;
+  const localISO = new Date(now.getTime() - tzOffset).toISOString();
+  return localISO.slice(0, 16);
+};
+
 export const useExpenseApplication = () => {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
-  const [expenseDate, setExpenseDate] = useState("");
+  const [expenseDate, setExpenseDate] = useState(nowLocalDateTime());
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(false);
@@ -110,7 +117,7 @@ export const useExpenseApplication = () => {
         setDescription("");
         setAmount("");
         setCategory("");
-        setExpenseDate("");
+        setExpenseDate(nowLocalDateTime());
         await loadExpenses();
       } catch (err) {
         console.error("Error saving expense:", err);
