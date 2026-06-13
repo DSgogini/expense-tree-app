@@ -135,7 +135,7 @@ function App() {
   const formatExpenseDate = (date: Date) => ({
     day: date.toLocaleDateString(undefined, { day: "numeric" }),
     month: date.toLocaleDateString(undefined, { month: "short" }),
-    time: date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }),
+    time: date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true }),
   });
 
   const expensesForMonth = useMemo(
@@ -167,7 +167,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="container mx-auto max-w-6xl px-4">
-        <div className="rounded-3xl bg-white p-6 shadow-xl shadow-slate-200/50">
+        <div className="rounded-3xl bg-white p-4 shadow-xl shadow-slate-200/50">
           {loading && <p className="text-slate-600">Loading...</p>}
           {currentError && <p className="text-red-600 mb-4">{currentError}</p>}
 
@@ -199,7 +199,7 @@ function App() {
 
           {user && (
             <div className="grid gap-6 md:grid-cols-[1fr_1fr]">
-              <section className="rounded-3xl bg-slate-50 p-6 shadow-sm">
+              <section className="rounded-3xl bg-slate-50 p-2 shadow-sm">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700">Description</label>
@@ -272,7 +272,7 @@ function App() {
                 </form>
               </section>
 
-              <section className="rounded-3xl bg-slate-50 p-6 shadow-sm">
+              <section className="rounded-3xl bg-slate-50 p-2 shadow-sm">
                 <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-2xl font-semibold text-slate-900">Expenses</h2>
@@ -325,28 +325,25 @@ function App() {
                                   key={expense.id}
                                   className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
                                 >
-                                  <div className="flex items-center gap-4 p-4">
+                                  <div className="flex gap-3 p-2 flex-row items-center">
                                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-slate-900 text-center text-white">
                                       <div>
-                                        <span className="block text-2xl font-semibold leading-none">{formattedDate.day}</span>
-                                        <span className="block text-[11px] uppercase tracking-[0.24em] text-slate-300">{formattedDate.month}</span>
+                                        <span className="block text-xl font-semibold leading-none">{formattedDate.day}</span>
+                                        <span className="block font-semibold text-[11px] uppercase tracking-[0.24em] text-slate-300">{formattedDate.month}</span>
                                       </div>
                                     </div>
-                                    <div className="min-w-0 flex-1">
-                                      <div className="flex items-center justify-between gap-4">
-                                        <p className="min-w-0 truncate text-lg font-semibold text-slate-900">{expense.description}</p>
-                                        <div className="flex flex-col items-end justify-center text-right">
-                                          <p className="text-lg font-bold text-slate-900">₹{expense.amount.toFixed(2)}</p>
-                                        </div>
-                                      </div>
 
-                                      <div className="mt-2 flex items-center justify-between text-sm text-slate-500">
-                                        <div className="flex items-center gap-2">
-                                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{categoryName}</span>
-                                          <span className="truncate">• By {userNameById.get(expense.createdBy) ?? expense.createdBy}</span>
-                                        </div>
-                                        <div className="text-right text-sm text-slate-500">{formattedDate.time}</div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-start justify-between gap-4">
+                                        <p className="min-w-0 truncate text-sm font-semibold text-slate-900">{expense.description}</p>
                                       </div>
+                                      <p className="mt-2 text-xs text-slate-500">{categoryName}</p>
+                                      <p className="mt-1 truncate text-xs text-slate-500">By {userNameById.get(expense.createdBy) ?? expense.createdBy}</p>
+                                    </div>
+
+                                    <div className="flex flex-col items-end justify-center gap-2 text-right">
+                                      <p className="truncate text-lg font-bold text-slate-900">₹{expense.amount}</p>
+                                      <p className="text-xs text-slate-500">{formattedDate.time}</p>
                                     </div>
                                   </div>
                                 </article>
