@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "expense-tree-prod",
+    "dev": "moneyplant-88f7d"
+  }
+}
