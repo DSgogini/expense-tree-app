@@ -5,6 +5,7 @@ export type ExpenseProps = {
   categoryId: string;
   isActive: boolean;
   createdDate: Date;
+  expenseDate: Date;
   createdBy: string;
   modifiedDate: Date | null;
   modifiedBy: string | null;
@@ -15,6 +16,7 @@ type NewExpenseParams = {
   amount: number;
   categoryId: string;
   createdBy: string;
+  expenseDate?: Date;
 };
 
 const toDate = (value: unknown): Date | null => {
@@ -41,6 +43,7 @@ export class Expense {
   readonly categoryId: string;
   readonly isActive: boolean;
   readonly createdDate: Date;
+  readonly expenseDate: Date;
   readonly createdBy: string;
   readonly modifiedDate: Date | null;
   readonly modifiedBy: string | null;
@@ -52,6 +55,7 @@ export class Expense {
     this.categoryId = props.categoryId;
     this.isActive = props.isActive;
     this.createdDate = props.createdDate;
+    this.expenseDate = props.expenseDate;
     this.createdBy = props.createdBy;
     this.modifiedDate = props.modifiedDate;
     this.modifiedBy = props.modifiedBy;
@@ -86,6 +90,7 @@ export class Expense {
       categoryId: trimmedCategoryId,
       isActive: true,
       createdDate: new Date(),
+      expenseDate: params.expenseDate ?? new Date(),
       createdBy: trimmedCreatedBy,
       modifiedDate: null,
       modifiedBy: null,
@@ -99,6 +104,7 @@ export class Expense {
     const categoryId = String(raw.categoryId ?? "");
     const isActive = raw.isActive === false ? false : true;
     const createdDate = toDate(raw.createdDate) ?? new Date();
+    const expenseDate = toDate(raw.expenseDate) ?? new Date();
     const createdBy = String(raw.createdBy ?? "");
     const modifiedDate = toDate(raw.modifiedDate);
     const modifiedBy = raw.modifiedBy == null ? null : String(raw.modifiedBy);
@@ -110,6 +116,7 @@ export class Expense {
       categoryId,
       isActive,
       createdDate,
+      expenseDate,
       createdBy,
       modifiedDate,
       modifiedBy,
@@ -124,6 +131,7 @@ export class Expense {
       categoryId: this.categoryId,
       isActive: this.isActive,
       createdDate: this.createdDate,
+      expenseDate: this.expenseDate,
       createdBy: this.createdBy,
       modifiedDate: this.modifiedDate,
       modifiedBy: this.modifiedBy,

@@ -16,6 +16,7 @@ export const useExpenseApplication = () => {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
+  const [expenseDate, setExpenseDate] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,7 +52,7 @@ export const useExpenseApplication = () => {
   const submitExpense = useCallback(
     async (createdBy: string) => {
       const trimmedDescription = description.trim();
-      const trimmedCategory = category.trim();
+      let trimmedCategory = category.trim();
       const numericAmount = Number(amount);
 
       if (!trimmedDescription) {
@@ -60,12 +61,16 @@ export const useExpenseApplication = () => {
       }
 
       if (!trimmedCategory) {
-        setError("Category is required.");
-        return;
+        trimmedCategory = "Uncategorized";
       }
 
       if (Number.isNaN(numericAmount) || numericAmount <= 0) {
         setError("Enter a valid amount greater than 0.");
+        return;
+      }
+
+      if (!expenseDate.trim()) {
+        setError("Date is required.");
         return;
       }
 
@@ -87,17 +92,25 @@ export const useExpenseApplication = () => {
           categoryId = newCategory.id;
         }
 
+        const selectedDate = new Date(expenseDate);
+        if (Number.isNaN(selectedDate.getTime())) {
+          setError("Invalid date. Please select a valid date and time.");
+          return;
+        }
+
         const expense = Expense.createNew({
           description: trimmedDescription,
           amount: numericAmount,
           categoryId,
           createdBy,
+          expenseDate: selectedDate,
         });
 
         await addExpenseUseCase(expenseRepository, expense);
         setDescription("");
         setAmount("");
         setCategory("");
+        setExpenseDate("");
         await loadExpenses();
       } catch (err) {
         console.error("Error saving expense:", err);
@@ -106,13 +119,14 @@ export const useExpenseApplication = () => {
         setLoading(false);
       }
     },
-    [description, amount, category, categories, loadExpenses, loadCategories]
+    [description, amount, category, expenseDate, categories, loadExpenses, loadCategories]
   );
 
   return {
     description,
     amount,
     category,
+    expenseDate,
     categories,
     expenses,
     loading,
@@ -120,6 +134,7 @@ export const useExpenseApplication = () => {
     setDescription,
     setAmount,
     setCategory,
+    setExpenseDate,
     setError,
     loadExpenses,
     submitExpense,
