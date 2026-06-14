@@ -158,6 +158,22 @@ function App() {
     }, {} as Record<string, typeof expenses>);
   }, [expensesForMonth]);
 
+  const monthTotal = useMemo(
+    () => expensesForMonth.reduce((sum, expense) => sum + Number(expense.amount), 0),
+    [expensesForMonth]
+  );
+
+  const weekTotals = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(groupedExpenses).map(([weekKey, group]) => [
+          weekKey,
+          group.reduce((sum, expense) => sum + Number(expense.amount), 0),
+        ])
+      ) as Record<string, number>,
+    [groupedExpenses]
+  );
+
   const sortedWeekKeys = useMemo(
     () =>
       Object.keys(groupedExpenses).sort((a, b) => new Date(b).getTime() - new Date(a).getTime()),
@@ -166,7 +182,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">
-      <div className="container mx-auto max-w-6xl px-4">
+      <div className="container mx-auto max-w-6xl px-2">
         <div className="rounded-3xl bg-white p-4 shadow-xl shadow-slate-200/50">
           {loading && <p className="text-slate-600">Loading...</p>}
           {currentError && <p className="text-red-600 mb-4">{currentError}</p>}
@@ -183,8 +199,8 @@ function App() {
             <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-lg font-semibold text-slate-900">Signed in as</p>
-                  <p className="text-slate-700">{user.displayName || user.email || user.uid}</p>
+                  <p className="text-base font-semibold text-slate-900">Signed in as</p>
+                  <p className="text-sm text-slate-700">{user.displayName || user.email || user.uid}</p>
                 </div>
                 <button
                   type="button"
@@ -206,7 +222,7 @@ function App() {
                     <input
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       placeholder="Coffee, groceries, rent"
                     />
                   </div>
@@ -215,7 +231,7 @@ function App() {
                     <input
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       placeholder="0.00"
                       type="number"
                       step="0.01"
@@ -227,7 +243,7 @@ function App() {
                     <input
                       value={expenseDate}
                       onChange={(e) => setExpenseDate(e.target.value)}
-                      className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       type="datetime-local"
                     />
                     <p className="mt-2 text-sm text-slate-500">
@@ -239,7 +255,7 @@ function App() {
                     <input
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                       placeholder="Type a category name"
                     />
                     <p className="mt-2 text-sm text-slate-500">
@@ -277,6 +293,7 @@ function App() {
                   <div>
                     <h2 className="text-2xl font-semibold text-slate-900">Expenses</h2>
                     <p className="text-sm text-slate-500">Showing expenses for {formatMonthHeading(viewMonthDate)}</p>
+                    <p className="mt-2 text-sm font-semibold text-slate-700">Month total: ₹{monthTotal.toFixed(2)}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     {monthOffset !== 0 ? (
@@ -311,8 +328,11 @@ function App() {
 
                       return (
                         <div key={weekKey} className="space-y-4">
-                          <div className="sticky top-6 z-10 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm shadow-slate-200/50">
-                            {weekLabel}
+                          <div className="sticky top-6 z-10 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900">
+                            <div className="flex gap-1 justify-between">
+                              <span className="font-semibold">{weekLabel}</span>
+                              <span className="text-slate-600 "> ₹{weekTotals[weekKey]?.toFixed(2) ?? "0.00"}</span>
+                            </div>
                           </div>
                           <div className="space-y-4">
                             {group.map((expense) => {
@@ -325,24 +345,24 @@ function App() {
                                   key={expense.id}
                                   className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
                                 >
-                                  <div className="flex gap-3 p-2 flex-row items-center">
+                                  <div className="flex gap-2 p-2 flex-row items-center">
                                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-slate-900 text-center text-white">
                                       <div>
-                                        <span className="block text-xl font-semibold leading-none">{formattedDate.day}</span>
+                                        <span className="block text-lg font-semibold leading-none">{formattedDate.day}</span>
                                         <span className="block font-semibold text-[11px] uppercase tracking-[0.24em] text-slate-300">{formattedDate.month}</span>
                                       </div>
                                     </div>
 
                                     <div className="min-w-0 flex-1">
                                       <div className="flex items-start justify-between gap-4">
-                                        <p className="min-w-0 truncate text-sm font-semibold text-slate-900">{expense.description}</p>
+                                        <p className="min-w-0 truncate text-sm text-slate-900">{expense.description}</p>
                                       </div>
                                       <p className="mt-2 text-xs text-slate-500">{categoryName}</p>
                                       <p className="mt-1 truncate text-xs text-slate-500">By {userNameById.get(expense.createdBy) ?? expense.createdBy}</p>
                                     </div>
 
-                                    <div className="flex flex-col items-end justify-center gap-2 text-right">
-                                      <p className="truncate text-lg font-bold text-slate-900">₹{expense.amount}</p>
+                                    <div className="flex flex-col items-center justify-center gap-2">
+                                      <p className="truncate font-semibold text-slate-900">₹{expense.amount}</p>
                                       <p className="text-xs text-slate-500">{formattedDate.time}</p>
                                     </div>
                                   </div>
