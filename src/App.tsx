@@ -65,10 +65,10 @@ function App() {
   }, [category, categories]);
 
   useEffect(() => {
-    if (user && selectedSpaceId) {
+    if (user && selectedSpaceId && viewMode === "details") {
       void loadExpenses(selectedSpaceId);
     }
-  }, [user, selectedSpaceId, loadExpenses]);
+  }, [user, selectedSpaceId, viewMode, loadExpenses]);
 
   useEffect(() => {
     if (user) {
