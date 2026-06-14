@@ -181,9 +181,9 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-slate-50 py-6">
       <div className="container mx-auto max-w-6xl px-2">
-        <div className="rounded-3xl bg-white p-4 shadow-xl shadow-slate-200/50">
+        <div className="rounded-3xl bg-white p-3 shadow-xl shadow-slate-200/50">
           {loading && <p className="text-slate-600">Loading...</p>}
           {currentError && <p className="text-red-600 mb-4">{currentError}</p>}
 
@@ -196,7 +196,7 @@ function App() {
               Sign in with Google
             </button>
           ) : (
-            <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-base font-semibold text-slate-900">Signed in as</p>
@@ -216,7 +216,7 @@ function App() {
           {user && (
             <div className="grid gap-6 md:grid-cols-[1fr_1fr]">
               <section className="rounded-3xl bg-slate-50 p-2 shadow-sm">
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-slate-700">Description</label>
                     <input
@@ -289,18 +289,18 @@ function App() {
               </section>
 
               <section className="rounded-3xl bg-slate-50 p-2 shadow-sm">
-                <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-2xl font-semibold text-slate-900">Expenses</h2>
-                    <p className="text-sm text-slate-500">Showing expenses for {formatMonthHeading(viewMonthDate)}</p>
+                    <p className="text-sm text-slate-500">Showing expenses for <span className="font-semibold">{formatMonthHeading(viewMonthDate)}</span></p>
                     <p className="mt-2 text-sm font-semibold text-slate-700">Month total: ₹{monthTotal.toFixed(2)}</p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {monthOffset !== 0 ? (
                       <button
                         type="button"
                         onClick={() => setMonthOffset(0)}
-                        className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        className="rounded-2xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
                       >
                         Back to current month
                       </button>
@@ -308,7 +308,7 @@ function App() {
                     <button
                       type="button"
                       onClick={() => setMonthOffset((prev) => prev - 1)}
-                      className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-200"
+                      className="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-900 transition hover:bg-slate-200"
                     >
                       ← Previous month
                     </button>
@@ -320,15 +320,15 @@ function App() {
                 ) : expensesForMonth.length === 0 ? (
                   <p className="text-slate-600">No expenses for this month. Add one above or switch to a different month.</p>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {sortedWeekKeys.map((weekKey) => {
                       const weekStart = new Date(weekKey);
                       const weekLabel = formatWeekHeading(weekStart);
                       const group = groupedExpenses[weekKey] ?? [];
 
                       return (
-                        <div key={weekKey} className="space-y-4">
-                          <div className="sticky top-6 z-10 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900">
+                        <div key={weekKey} className="space-y-3">
+                          <div className="sticky top-6 z-10 border-b border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900">
                             <div className="flex gap-1 justify-between">
                               <span className="font-semibold">{weekLabel}</span>
                               <span className="text-slate-600 "> ₹{weekTotals[weekKey]?.toFixed(2) ?? "0.00"}</span>
@@ -346,10 +346,10 @@ function App() {
                                   className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
                                 >
                                   <div className="flex gap-2 p-2 flex-row items-center">
-                                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-slate-900 text-center text-white">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-900 text-center text-white">
                                       <div>
-                                        <span className="block text-lg font-semibold leading-none">{formattedDate.day}</span>
-                                        <span className="block font-semibold text-[11px] uppercase tracking-[0.24em] text-slate-300">{formattedDate.month}</span>
+                                        <span className="block font-semibold leading-none">{formattedDate.day}</span>
+                                        <span className="block font-semibold text-[9px] uppercase tracking-[0.24em] text-slate-300">{formattedDate.month}</span>
                                       </div>
                                     </div>
 
