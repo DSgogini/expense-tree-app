@@ -119,7 +119,7 @@ export const useExpenseApplication = () => {
         setAmount("");
         setCategory("");
         setExpenseDate(nowLocalDateTime());
-        await loadExpenses();
+        await loadExpenses(spaceId);
       } catch (err) {
         console.error("Error saving expense:", err);
         setError("Unable to save expense. Try again later.");

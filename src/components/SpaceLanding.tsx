@@ -36,10 +36,10 @@ export default function SpaceLanding({
     };
 
     return (
-        <div className="fixed inset-0 bg-[#141414] flex flex-col items-center justify-center py-12 z-50">
-            <h1 className="mb-10 text-5xl font-semibold text-white">Who's using this space?</h1>
+        <div className="fixed inset-0 bg-[#141414] flex min-h-screen flex-col items-center justify-center px-4 py-10 text-center z-50">
+            <h1 className="mb-8 text-3xl font-semibold text-white sm:text-5xl">Who's using this space?</h1>
 
-            <div className="flex gap-8">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-8 max-w-5xl">
                 {loading ? (
                     <p className="text-slate-300">Loading spaces...</p>
                 ) : (
@@ -56,7 +56,7 @@ export default function SpaceLanding({
                                 <button
                                     key={space.id}
                                     onClick={() => onEnterSpace(space.id)}
-                                    className="flex w-40 cursor-pointer flex-col items-center gap-3 rounded-xl bg-white/5 px-6 py-6 text-center transition hover:bg-[#e5e5e5]"
+                                    className="flex min-w-[180px] max-w-[180px] cursor-pointer flex-col items-center gap-3 rounded-xl bg-white/5 px-6 py-6 text-center transition hover:bg-[#e5e5e5] sm:min-w-[200px]"
                                 >
                                     <div className="flex h-28 w-28 items-center justify-center rounded-md bg-gradient-to-br from-blue-400 to-blue-700 text-2xl font-semibold text-white">
                                         {initials}
@@ -68,7 +68,7 @@ export default function SpaceLanding({
 
                         <button
                             onClick={handleAddSpace}
-                            className="flex w-40 flex-col items-center gap-3 rounded-xl border border-slate-600 bg-white/5 px-6 py-6 text-center text-slate-300 transition hover:bg-[#e5e5e5] hover:text-slate-900"
+                            className="flex min-w-[180px] max-w-[180px] flex-col items-center gap-3 rounded-xl border border-slate-600 bg-white/5 px-6 py-6 text-center text-slate-300 transition hover:bg-[#e5e5e5] hover:text-slate-900 sm:min-w-[200px]"
                         >
                             <div className="flex h-28 w-28 items-center justify-center rounded-md bg-slate-700 text-3xl">+</div>
                             <span className="mt-2 text-sm">Add Space</span>
