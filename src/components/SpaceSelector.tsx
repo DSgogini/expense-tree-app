@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { Space } from "../domain/space/Space";
 import type { User } from "../domain/user/User";
 
@@ -69,10 +69,6 @@ export default function SpaceSelector({
         setInviteSuccess(`Invitation sent to ${invitedUser.email}`);
     };
 
-    const sharedLabel = useMemo(
-        () => (currentUserId ? "Private" : "Shared"),
-        [currentUserId]
-    );
 
     return (
         <section className="mb-6 rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
@@ -95,8 +91,8 @@ export default function SpaceSelector({
                         type="button"
                         onClick={() => setSelectedSpaceId(space.id)}
                         className={`rounded-3xl border px-4 py-4 text-left transition ${selectedSpaceId === space.id
-                                ? "border-blue-600 bg-blue-50 shadow-sm"
-                                : "border-slate-200 bg-white hover:bg-slate-50"
+                            ? "border-blue-600 bg-blue-50 shadow-sm"
+                            : "border-slate-200 bg-white hover:bg-slate-50"
                             }`}
                     >
                         <p className="text-sm font-semibold text-slate-900">{space.name}</p>

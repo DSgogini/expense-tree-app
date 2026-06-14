@@ -1,4 +1,3 @@
-import React from "react";
 import type { Space } from "../domain/space/Space";
 import type { User } from "../domain/user/User";
 
@@ -23,7 +22,6 @@ function initialsFromName(name: string) {
 export default function SpaceLanding({
     spaces,
     users = [],
-    currentUserId,
     currentUserDisplayName = "",
     loading,
     onEnterSpace,
