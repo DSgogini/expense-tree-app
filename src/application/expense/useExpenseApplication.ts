@@ -4,7 +4,7 @@ import { ExpenseFirestoreRepository } from "../../infrastructure/expense/Expense
 import type { CategoryRepository } from "../../domain/category/CategoryRepository";
 import { CategoryFirestoreRepository } from "../../infrastructure/category/CategoryFirestoreRepository";
 import { addExpenseUseCase } from "../../usecases/expense/addExpenseUseCase";
-import { fetchExpensesUseCase } from "../../usecases/expense/fetchExpensesUseCase";
+import { fetchExpensesBySpaceUseCase } from "../../usecases/expense/fetchExpensesBySpaceUseCase";
 import { addCategoryUseCase } from "../../usecases/category/addCategoryUseCase";
 import { fetchCategoriesUseCase } from "../../usecases/category/fetchCategoriesUseCase";
 import { Category } from "../../domain/category/Category";
@@ -38,12 +38,12 @@ export const useExpenseApplication = () => {
     }
   }, []);
 
-  const loadExpenses = useCallback(async () => {
+  const loadExpenses = useCallback(async (spaceId: number) => {
     setError("");
     setLoading(true);
 
     try {
-      const docs = await fetchExpensesUseCase(expenseRepository);
+      const docs = await fetchExpensesBySpaceUseCase(expenseRepository, spaceId);
       setExpenses(docs);
     } catch (err) {
       console.error("Error loading expenses:", err);
@@ -57,7 +57,7 @@ export const useExpenseApplication = () => {
   }, [loadCategories]);
 
   const submitExpense = useCallback(
-    async (createdBy: string) => {
+    async (createdBy: string, spaceId: number) => {
       const trimmedDescription = description.trim();
       let trimmedCategory = category.trim();
       const numericAmount = Number(amount);
@@ -109,6 +109,7 @@ export const useExpenseApplication = () => {
           description: trimmedDescription,
           amount: numericAmount,
           categoryId,
+          spaceId,
           createdBy,
           expenseDate: selectedDate,
         });

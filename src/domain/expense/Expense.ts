@@ -3,6 +3,7 @@ export type ExpenseProps = {
   description: string;
   amount: number;
   categoryId: string;
+  spaceId: number;
   isActive: boolean;
   createdDate: Date;
   expenseDate: Date;
@@ -15,6 +16,7 @@ type NewExpenseParams = {
   description: string;
   amount: number;
   categoryId: string;
+  spaceId: number;
   createdBy: string;
   expenseDate?: Date;
 };
@@ -41,6 +43,7 @@ export class Expense {
   readonly description: string;
   readonly amount: number;
   readonly categoryId: string;
+  readonly spaceId: number;
   readonly isActive: boolean;
   readonly createdDate: Date;
   readonly expenseDate: Date;
@@ -53,6 +56,7 @@ export class Expense {
     this.description = props.description;
     this.amount = props.amount;
     this.categoryId = props.categoryId;
+    this.spaceId = props.spaceId;
     this.isActive = props.isActive;
     this.createdDate = props.createdDate;
     this.expenseDate = props.expenseDate;
@@ -79,6 +83,10 @@ export class Expense {
       throw new Error("Expense category is required.");
     }
 
+    if (!Number.isFinite(params.spaceId) || params.spaceId <= 0) {
+      throw new Error("Expense space is required.");
+    }
+
     if (!trimmedCreatedBy) {
       throw new Error("CreatedBy is required.");
     }
@@ -88,6 +96,7 @@ export class Expense {
       description: trimmedDescription,
       amount: params.amount,
       categoryId: trimmedCategoryId,
+      spaceId: params.spaceId,
       isActive: true,
       createdDate: new Date(),
       expenseDate: params.expenseDate ?? new Date(),
@@ -102,6 +111,7 @@ export class Expense {
     const description = String(raw.description ?? "");
     const amount = Number(raw.amount ?? 0);
     const categoryId = String(raw.categoryId ?? "");
+    const spaceId = Number(raw.spaceId ?? 0);
     const isActive = raw.isActive === false ? false : true;
     const createdDate = toDate(raw.createdDate) ?? new Date();
     const expenseDate = toDate(raw.expenseDate) ?? new Date();
@@ -114,6 +124,7 @@ export class Expense {
       description,
       amount,
       categoryId,
+      spaceId,
       isActive,
       createdDate,
       expenseDate,
@@ -129,6 +140,7 @@ export class Expense {
       description: this.description,
       amount: this.amount,
       categoryId: this.categoryId,
+      spaceId: this.spaceId,
       isActive: this.isActive,
       createdDate: this.createdDate,
       expenseDate: this.expenseDate,

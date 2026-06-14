@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, orderBy, where } from "firebase/firestore";
 import { db } from "../../firebase";
 import type { ExpenseRepository } from "../../domain/expense/ExpenseRepository";
 import { Expense } from "../../domain/expense/Expense";
@@ -12,6 +12,19 @@ export class ExpenseFirestoreRepository implements ExpenseRepository {
 
   async fetchExpenses(): Promise<Expense[]> {
     const expensesQuery = query(expensesCollection, orderBy("createdDate", "desc"));
+    const snapshot = await getDocs(expensesQuery);
+
+    return snapshot.docs.map((doc) =>
+      Expense.fromPersistence({ id: doc.id, ...doc.data() })
+    );
+  }
+
+  async fetchExpensesBySpace(spaceId: number): Promise<Expense[]> {
+    const expensesQuery = query(
+      expensesCollection,
+      where("spaceId", "==", spaceId),
+      orderBy("createdDate", "desc")
+    );
     const snapshot = await getDocs(expensesQuery);
 
     return snapshot.docs.map((doc) =>
