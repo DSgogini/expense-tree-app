@@ -102,7 +102,6 @@ export class Space {
 
     toPersistence() {
         return {
-            id: this.id,
             name: this.name,
             isActive: this.isActive,
             createdOn: this.createdOn,

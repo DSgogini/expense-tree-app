@@ -8,6 +8,7 @@ import { fetchExpensesBySpaceUseCase } from "../../usecases/expense/fetchExpense
 import { addCategoryUseCase } from "../../usecases/category/addCategoryUseCase";
 import { fetchCategoriesUseCase } from "../../usecases/category/fetchCategoriesUseCase";
 import { Category } from "../../domain/category/Category";
+import { queryCache, generateCacheKey } from "../../utils/queryCache";
 
 const expenseRepository = new ExpenseFirestoreRepository();
 const categoryRepository: CategoryRepository = new CategoryFirestoreRepository();
@@ -39,12 +40,33 @@ export const useExpenseApplication = () => {
   }, []);
 
   const loadExpenses = useCallback(async (spaceId: number) => {
+    const cacheKey = generateCacheKey("expenses", spaceId);
+
+    // Check cache first - if valid, use cached data
+    const cachedExpenses = queryCache.get<Expense[]>(cacheKey);
+    if (cachedExpenses) {
+      setExpenses(cachedExpenses);
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
-      const docs = await fetchExpensesBySpaceUseCase(expenseRepository, spaceId);
+      // First day of the current month
+      const startDate = new Date();
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+      // Last day of the current month
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + 1);
+      endDate.setDate(0);
+      endDate.setHours(23, 59, 59, 999);
+
+      const docs = await fetchExpensesBySpaceUseCase(expenseRepository, spaceId, startDate.toISOString(), endDate.toISOString());
       setExpenses(docs);
+      // Cache for 5 minutes
+      queryCache.set(cacheKey, docs, 5 * 60 * 1000);
     } catch (err) {
       console.error("Error loading expenses:", err);
     } finally {
@@ -119,6 +141,8 @@ export const useExpenseApplication = () => {
         setAmount("");
         setCategory("");
         setExpenseDate(nowLocalDateTime());
+        // Invalidate cache before reloading to get fresh data
+        queryCache.invalidate(generateCacheKey("expenses", spaceId));
         await loadExpenses(spaceId);
       } catch (err) {
         console.error("Error saving expense:", err);
