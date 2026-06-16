@@ -46,6 +46,7 @@ function App() {
   } = useSpaceApplication(user?.uid ?? null);
 
   const [viewMode, setViewMode] = useState<"landing" | "details">("landing");
+  const [monthOffset, setMonthOffset] = useState(0);
 
   const {
     users,
@@ -64,11 +65,26 @@ function App() {
     );
   }, [category, categories]);
 
+  const viewMonthDate = useMemo(() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() + monthOffset);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, [monthOffset]);
+
+  useEffect(() => {
+    setMonthOffset(0);
+  }, [selectedSpaceId, viewMode]);
+
   useEffect(() => {
     if (user && selectedSpaceId && viewMode === "details") {
-      void loadExpenses(selectedSpaceId);
+      void loadExpenses(
+        selectedSpaceId,
+        viewMonthDate.getFullYear(),
+        viewMonthDate.getMonth()
+      );
     }
-  }, [user, selectedSpaceId, viewMode, loadExpenses]);
+  }, [user, selectedSpaceId, viewMode, viewMonthDate, loadExpenses]);
 
   useEffect(() => {
     if (user) {
@@ -112,25 +128,21 @@ function App() {
       return;
     }
 
-    await submitExpense(user.uid, selectedSpaceId);
+    await submitExpense(
+      user.uid,
+      selectedSpaceId,
+      viewMonthDate.getFullYear(),
+      viewMonthDate.getMonth()
+    );
   };
 
   const currentError = authError || expenseError || userError || spaceError;
   const loading = authLoading || expenseLoading || loadingUsers || loadingSpaces;
 
-  const [monthOffset, setMonthOffset] = useState(0);
-
   const userNameById = useMemo(
     () => new Map(users.map((currentUser) => [currentUser.id, currentUser.displayName])),
     [users]
   );
-
-  const viewMonthDate = useMemo(() => {
-    const date = new Date();
-    date.setMonth(date.getMonth() + monthOffset);
-    date.setHours(0, 0, 0, 0);
-    return date;
-  }, [monthOffset]);
 
   const formatMonthHeading = (date: Date) =>
     date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
@@ -166,17 +178,8 @@ function App() {
     time: date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true }),
   });
 
-  const expensesForMonth = useMemo(
-    () =>
-      expenses.filter((expense) => {
-        const date = expense.expenseDate ?? expense.createdDate;
-        return date.getMonth() === viewMonthDate.getMonth() && date.getFullYear() === viewMonthDate.getFullYear();
-      }),
-    [expenses, viewMonthDate]
-  );
-
   const groupedExpenses = useMemo(() => {
-    return expensesForMonth.reduce((groups, expense) => {
+    return expenses.reduce((groups, expense) => {
       const weekKey = getWeekStart(expense.expenseDate ?? expense.createdDate).toISOString();
       if (!groups[weekKey]) {
         groups[weekKey] = [];
@@ -184,11 +187,11 @@ function App() {
       groups[weekKey].push(expense);
       return groups;
     }, {} as Record<string, typeof expenses>);
-  }, [expensesForMonth]);
+  }, [expenses]);
 
   const monthTotal = useMemo(
-    () => expensesForMonth.reduce((sum, expense) => sum + Number(expense.amount), 0),
-    [expensesForMonth]
+    () => expenses.reduce((sum, expense) => sum + Number(expense.amount), 0),
+    [expenses]
   );
 
   const weekTotals = useMemo(
@@ -217,6 +220,7 @@ function App() {
         currentUserDisplayName={user?.displayName || user?.email || user?.uid}
         loading={loadingSpaces}
         onEnterSpace={(id) => {
+          setMonthOffset(0);
           setSelectedSpaceId(id);
           setViewMode("details");
         }}
@@ -339,7 +343,7 @@ function App() {
               <p className="text-slate-600">Loading expenses...</p>
             ) : !selectedSpace ? (
               <p className="text-slate-600">Select a space above to view expenses.</p>
-            ) : expensesForMonth.length === 0 ? (
+            ) : expenses.length === 0 ? (
               <p className="text-slate-600">No expenses for this space this month. Add one above or switch to a different space.</p>
             ) : (
               <div className="space-y-4">

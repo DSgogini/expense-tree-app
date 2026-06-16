@@ -15,14 +15,14 @@ export class ExpenseFirestoreRepository implements ExpenseRepository {
     throw new Error("Method not implemented.");
   }
 
-  async fetchExpensesBySpace(spaceId: number, startDate: string, endDate: string): Promise<Expense[]> {
+  async fetchExpensesBySpace(spaceId: number, startDate: Date, endDate: Date): Promise<Expense[]> {
     const expensesQuery = query(
       expensesCollection,
       where("spaceId", "==", spaceId),
       where("expenseDate", ">=", startDate),
       where("expenseDate", "<=", endDate),
       orderBy("expenseDate", "desc"),
-      limit(1000)
+      limit(500)
     );
     const snapshot = await getDocs(expensesQuery);
 

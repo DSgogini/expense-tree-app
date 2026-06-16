@@ -4,8 +4,8 @@ import { Expense } from "../../domain/expense/Expense";
 export const fetchExpensesBySpaceUseCase = async (
     repository: ExpenseRepository,
     spaceId: number,
-    startDate: string,
-    endDate: string
+    startDate: Date,
+    endDate: Date
 ): Promise<Expense[]> => {
     return repository.fetchExpensesBySpace(spaceId, startDate, endDate);
 };
