@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
 import type { CategoryRepository } from "../../domain/category/CategoryRepository";
 import { Category } from "../../domain/category/Category";
@@ -11,7 +11,7 @@ export class CategoryFirestoreRepository implements CategoryRepository {
   }
 
   async fetchCategories(): Promise<Category[]> {
-    const categoriesQuery = query(categoriesCollection, orderBy("name", "asc"));
+    const categoriesQuery = query(categoriesCollection, orderBy("name", "asc"), limit(100));
     const snapshot = await getDocs(categoriesQuery);
 
     return snapshot.docs.map((doc) =>

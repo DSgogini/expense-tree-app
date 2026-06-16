@@ -8,6 +8,8 @@ import { fetchExpensesBySpaceUseCase } from "../../usecases/expense/fetchExpense
 import { addCategoryUseCase } from "../../usecases/category/addCategoryUseCase";
 import { fetchCategoriesUseCase } from "../../usecases/category/fetchCategoriesUseCase";
 import { Category } from "../../domain/category/Category";
+import { queryCache, generateCacheKey } from "../../utils/queryCache";
+import { getMonthDateRange } from "../../utils/monthDateRange";
 
 const expenseRepository = new ExpenseFirestoreRepository();
 const categoryRepository: CategoryRepository = new CategoryFirestoreRepository();
@@ -38,15 +40,27 @@ export const useExpenseApplication = () => {
     }
   }, []);
 
-  const loadExpenses = useCallback(async (spaceId: number) => {
+  const loadExpenses = useCallback(async (spaceId: number, year: number, month: number) => {
+    const cacheKey = generateCacheKey("expenses", spaceId, year, month);
+
+    const cachedExpenses = queryCache.get<Expense[]>(cacheKey);
+    if (cachedExpenses) {
+      setExpenses(cachedExpenses);
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
-      const docs = await fetchExpensesBySpaceUseCase(expenseRepository, spaceId);
+      const { startDate, endDate } = getMonthDateRange(year, month);
+      const docs = await fetchExpensesBySpaceUseCase(expenseRepository, spaceId, startDate, endDate);
+      console.log("application/useExpenseApplication.ts: docs", docs);
       setExpenses(docs);
+      queryCache.set(cacheKey, docs, 5 * 60 * 1000);
     } catch (err) {
       console.error("Error loading expenses:", err);
+      setError("Unable to load expenses.");
     } finally {
       setLoading(false);
     }
@@ -57,7 +71,7 @@ export const useExpenseApplication = () => {
   }, [loadCategories]);
 
   const submitExpense = useCallback(
-    async (createdBy: string, spaceId: number) => {
+    async (createdBy: string, spaceId: number, viewYear: number, viewMonth: number) => {
       const trimmedDescription = description.trim();
       let trimmedCategory = category.trim();
       const numericAmount = Number(amount);
@@ -119,7 +133,10 @@ export const useExpenseApplication = () => {
         setAmount("");
         setCategory("");
         setExpenseDate(nowLocalDateTime());
-        await loadExpenses(spaceId);
+        queryCache.invalidate(
+          generateCacheKey("expenses", spaceId, selectedDate.getFullYear(), selectedDate.getMonth())
+        );
+        await loadExpenses(spaceId, viewYear, viewMonth);
       } catch (err) {
         console.error("Error saving expense:", err);
         setError("Unable to save expense. Try again later.");

@@ -7,6 +7,7 @@ import { addSpaceUseCase } from "../../usecases/space/addSpaceUseCase";
 import { fetchSpacesForUserUseCase } from "../../usecases/space/fetchSpacesForUserUseCase";
 import { addSpaceMemberUseCase } from "../../usecases/space_member/addSpaceMemberUseCase";
 import { fetchSpaceMembersByUserUseCase } from "../../usecases/space_member/fetchSpaceMembersByUserUseCase";
+import { queryCache, generateCacheKey } from "../../utils/queryCache";
 
 const spaceRepository = new SpaceFirestoreRepository();
 const spaceMemberRepository = new SpaceMemberFirestoreRepository();
@@ -25,12 +26,26 @@ export const useSpaceApplication = (authUserId: string | null) => {
             return;
         }
 
+        const cacheKey = generateCacheKey("spaces", authUserId);
+
+        // Check cache first
+        const cachedSpaces = queryCache.get<Space[]>(cacheKey);
+        if (cachedSpaces) {
+            setSpaces(cachedSpaces);
+            if (!selectedSpaceId && cachedSpaces.length > 0) {
+                setSelectedSpaceId(cachedSpaces[0].id);
+            }
+            return;
+        }
+
         setSpaceError("");
         setLoadingSpaces(true);
 
         try {
             const docs = await fetchSpacesForUserUseCase(spaceRepository, spaceMemberRepository, authUserId);
             setSpaces(docs);
+            // Cache for 10 minutes
+            queryCache.set(cacheKey, docs, 10 * 60 * 1000);
             if (!selectedSpaceId && docs.length > 0) {
                 setSelectedSpaceId(docs[0].id);
             }
@@ -66,6 +81,8 @@ export const useSpaceApplication = (authUserId: string | null) => {
 
             setSpaces([defaultSpace]);
             setSelectedSpaceId(defaultSpace.id);
+            // Invalidate cache after creating space
+            queryCache.invalidate(generateCacheKey("spaces", authUserId));
         } catch (err) {
             console.error("Error creating default space:", err);
             setSpaceError("Unable to create default space.");
@@ -94,6 +111,8 @@ export const useSpaceApplication = (authUserId: string | null) => {
                 );
                 setSpaces((current) => [...current, newSpace]);
                 setSelectedSpaceId(newSpace.id);
+                // Invalidate cache after creating space
+                queryCache.invalidate(generateCacheKey("spaces", authUserId));
             } catch (err) {
                 console.error("Error creating space:", err);
                 setSpaceError("Unable to create space.");
