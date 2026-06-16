@@ -4,10 +4,12 @@ import { ExpenseFirestoreRepository } from "../../infrastructure/expense/Expense
 import type { CategoryRepository } from "../../domain/category/CategoryRepository";
 import { CategoryFirestoreRepository } from "../../infrastructure/category/CategoryFirestoreRepository";
 import { addExpenseUseCase } from "../../usecases/expense/addExpenseUseCase";
-import { fetchExpensesUseCase } from "../../usecases/expense/fetchExpensesUseCase";
+import { fetchExpensesBySpaceUseCase } from "../../usecases/expense/fetchExpensesBySpaceUseCase";
 import { addCategoryUseCase } from "../../usecases/category/addCategoryUseCase";
 import { fetchCategoriesUseCase } from "../../usecases/category/fetchCategoriesUseCase";
 import { Category } from "../../domain/category/Category";
+import { queryCache, generateCacheKey } from "../../utils/queryCache";
+import { getMonthDateRange } from "../../utils/monthDateRange";
 
 const expenseRepository = new ExpenseFirestoreRepository();
 const categoryRepository: CategoryRepository = new CategoryFirestoreRepository();
@@ -38,15 +40,27 @@ export const useExpenseApplication = () => {
     }
   }, []);
 
-  const loadExpenses = useCallback(async () => {
+  const loadExpenses = useCallback(async (spaceId: number, year: number, month: number) => {
+    const cacheKey = generateCacheKey("expenses", spaceId, year, month);
+
+    const cachedExpenses = queryCache.get<Expense[]>(cacheKey);
+    if (cachedExpenses) {
+      setExpenses(cachedExpenses);
+      return;
+    }
+
     setError("");
     setLoading(true);
 
     try {
-      const docs = await fetchExpensesUseCase(expenseRepository);
+      const { startDate, endDate } = getMonthDateRange(year, month);
+      const docs = await fetchExpensesBySpaceUseCase(expenseRepository, spaceId, startDate, endDate);
+      console.log("application/useExpenseApplication.ts: docs", docs);
       setExpenses(docs);
+      queryCache.set(cacheKey, docs, 5 * 60 * 1000);
     } catch (err) {
       console.error("Error loading expenses:", err);
+      setError("Unable to load expenses.");
     } finally {
       setLoading(false);
     }
@@ -57,7 +71,7 @@ export const useExpenseApplication = () => {
   }, [loadCategories]);
 
   const submitExpense = useCallback(
-    async (createdBy: string) => {
+    async (createdBy: string, spaceId: number, viewYear: number, viewMonth: number) => {
       const trimmedDescription = description.trim();
       let trimmedCategory = category.trim();
       const numericAmount = Number(amount);
@@ -109,6 +123,7 @@ export const useExpenseApplication = () => {
           description: trimmedDescription,
           amount: numericAmount,
           categoryId,
+          spaceId,
           createdBy,
           expenseDate: selectedDate,
         });
@@ -118,7 +133,10 @@ export const useExpenseApplication = () => {
         setAmount("");
         setCategory("");
         setExpenseDate(nowLocalDateTime());
-        await loadExpenses();
+        queryCache.invalidate(
+          generateCacheKey("expenses", spaceId, selectedDate.getFullYear(), selectedDate.getMonth())
+        );
+        await loadExpenses(spaceId, viewYear, viewMonth);
       } catch (err) {
         console.error("Error saving expense:", err);
         setError("Unable to save expense. Try again later.");

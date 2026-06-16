@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, orderBy, where, limit } from "firebase/firestore";
 import { db } from "../../firebase";
 import type { ExpenseRepository } from "../../domain/expense/ExpenseRepository";
 import { Expense } from "../../domain/expense/Expense";
@@ -6,12 +6,24 @@ import { Expense } from "../../domain/expense/Expense";
 const expensesCollection = collection(db, "expenses");
 
 export class ExpenseFirestoreRepository implements ExpenseRepository {
+
   async addExpense(expense: Expense): Promise<void> {
     await addDoc(expensesCollection, expense.toPersistence());
   }
 
-  async fetchExpenses(): Promise<Expense[]> {
-    const expensesQuery = query(expensesCollection, orderBy("createdDate", "desc"));
+  fetchExpenses(): Promise<Expense[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  async fetchExpensesBySpace(spaceId: number, startDate: Date, endDate: Date): Promise<Expense[]> {
+    const expensesQuery = query(
+      expensesCollection,
+      where("spaceId", "==", spaceId),
+      where("expenseDate", ">=", startDate),
+      where("expenseDate", "<=", endDate),
+      orderBy("expenseDate", "desc"),
+      limit(500)
+    );
     const snapshot = await getDocs(expensesQuery);
 
     return snapshot.docs.map((doc) =>
