@@ -246,22 +246,6 @@ function App() {
             </button>
           ) : (
             <>
-              <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm">
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <p className="text-base font-semibold text-slate-900">Signed in as</p>
-                    <p className="text-sm text-slate-700">{user.displayName || user.email || user.uid}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="rounded-2xl bg-slate-900 px-4 py-2 text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </div>
-
               <div className="grid gap-6 md:grid-cols-[1fr_1fr]">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-slate-900">{selectedSpace?.name ?? "Space"}</h2>
@@ -270,7 +254,9 @@ function App() {
                     onClick={() => setViewMode("landing")}
                     className="rounded-2xl bg-slate-100 px-3 py-1 text-sm"
                   >
-                    Back to spaces
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                      <path fill-rule="evenodd" d="M7.28 7.72a.75.75 0 0 1 0 1.06l-2.47 2.47H21a.75.75 0 0 1 0 1.5H4.81l2.47 2.47a.75.75 0 1 1-1.06 1.06l-3.75-3.75a.75.75 0 0 1 0-1.06l3.75-3.75a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"></path>
+                    </svg>
                   </button>
                 </div>
                 <section className="rounded-3xl bg-slate-50 p-2 shadow-sm">
