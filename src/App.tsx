@@ -230,9 +230,9 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-6">
-      <div className="container mx-auto max-w-6xl px-2">
-        <div className="rounded-3xl bg-white p-3 shadow-xl shadow-slate-200/50">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50 py-3 sm:py-6">
+      <div className="mobile-safe-x container mx-auto max-w-6xl sm:px-6">
+        <div className="rounded-3xl bg-white p-3 shadow-lg shadow-slate-200/50 sm:p-6 sm:shadow-xl">
           {loading && <p className="text-slate-600">Loading...</p>}
           {currentError && <p className="text-red-600 mb-4">{currentError}</p>}
 
@@ -246,27 +246,27 @@ function App() {
             </button>
           ) : (
             <>
-              <div className="grid gap-6 md:grid-cols-[1fr_1fr]">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-slate-900">{selectedSpace?.name ?? "Space"}</h2>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("landing")}
-                    className="rounded-2xl bg-slate-100 px-3 py-1 text-sm"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
-                      <path fill-rule="evenodd" d="M7.28 7.72a.75.75 0 0 1 0 1.06l-2.47 2.47H21a.75.75 0 0 1 0 1.5H4.81l2.47 2.47a.75.75 0 1 1-1.06 1.06l-3.75-3.75a.75.75 0 0 1 0-1.06l3.75-3.75a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"></path>
-                    </svg>
-                  </button>
-                </div>
-                <section className="rounded-3xl bg-slate-50 p-2 shadow-sm">
-                  <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-slate-900">{selectedSpace?.name ?? "Space"}</h2>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("landing")}
+                  className="rounded-2xl bg-slate-100 px-3 py-1 text-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                    <path fillRule="evenodd" d="M7.28 7.72a.75.75 0 0 1 0 1.06l-2.47 2.47H21a.75.75 0 0 1 0 1.5H4.81l2.47 2.47a.75.75 0 1 1-1.06 1.06l-3.75-3.75a.75.75 0 0 1 0-1.06l3.75-3.75a.75.75 0 0 1 1.06 0Z" clipRule="evenodd"></path>
+                  </svg>
+                </button>
+              </div>
+              <div className="grid min-w-0 gap-4 md:grid-cols-2 md:gap-6">
+                <section className="min-w-0 rounded-3xl bg-slate-50 p-2 shadow-sm max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none sm:p-4">
+                  <form onSubmit={handleSubmit} className="min-w-0 space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-slate-700">Description</label>
                       <input
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        className="mt-1 w-full min-w-0 max-w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         placeholder="Coffee, groceries, rent"
                       />
                     </div>
@@ -275,7 +275,7 @@ function App() {
                       <input
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        className="mt-1 w-full min-w-0 max-w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         placeholder="0.00"
                         type="number"
                         step="0.01"
@@ -287,10 +287,10 @@ function App() {
                       <input
                         value={expenseDate}
                         onChange={(e) => setExpenseDate(e.target.value)}
-                        className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        className="mt-1 w-full min-w-0 max-w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         type="datetime-local"
                       />
-                      <p className="mt-2 text-sm text-slate-500">
+                      <p className="mt-2 text-xs text-slate-400">
                         Selected date: {expenseDate ? new Date(expenseDate).toLocaleString() : "Current time will be used"}
                       </p>
                     </div>
@@ -299,10 +299,10 @@ function App() {
                       <input
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="mt-1 w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        className="mt-1 w-full min-w-0 max-w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         placeholder="Type a category name"
                       />
-                      <p className="mt-2 text-sm text-slate-500">
+                      <p className="mt-2 text-xs text-slate-400">
                         Suggestions are shown while typing; a new category will be created automatically on save.
                       </p>
                       {matchedCategories.length > 0 && (
@@ -332,19 +332,19 @@ function App() {
                   </form>
                 </section>
 
-                <section className="rounded-3xl bg-slate-50 p-2 shadow-sm">
-                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <section className="min-w-0 rounded-3xl bg-slate-50 p-2 shadow-sm max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none sm:p-4">
+                  <div className="mb-3 flex min-w-0 flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-2xl font-semibold text-slate-900">Expenses</h2>
                       <p className="text-sm text-slate-500">Showing expenses for <span className="font-semibold">{formatMonthHeading(viewMonthDate)}</span></p>
                       <p className="mt-2 text-sm font-semibold text-slate-700">Month total: ₹{monthTotal.toFixed(2)}</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
                       {monthOffset !== 0 ? (
                         <button
                           type="button"
                           onClick={() => setMonthOffset(0)}
-                          className="rounded-2xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                          className="shrink-0 rounded-2xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
                         >
                           Back to current month
                         </button>
@@ -352,7 +352,7 @@ function App() {
                       <button
                         type="button"
                         onClick={() => setMonthOffset((prev) => prev - 1)}
-                        className="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-900 transition hover:bg-slate-200"
+                        className="shrink-0 rounded-2xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-900 transition hover:bg-slate-200"
                       >
                         ← Previous month
                       </button>
@@ -364,17 +364,17 @@ function App() {
                   ) : !selectedSpace ? (
                     <p className="text-slate-600">Select a space above to view expenses.</p>
                   ) : expenses.length === 0 ? (
-                    <p className="text-slate-600">No expenses for this space this month. Add one above or switch to a different space.</p>
+                    <p className="text-sm text-slate-600">No expenses for this space this month. Add one above or switch to a different space.</p>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="min-w-0 space-y-4">
                       {sortedWeekKeys.map((weekKey) => {
                         const weekStart = new Date(weekKey);
                         const weekLabel = formatWeekHeading(weekStart);
                         const group = groupedExpenses[weekKey] ?? [];
 
                         return (
-                          <div key={weekKey} className="space-y-3">
-                            <div className="sticky top-6 z-10 border-b border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900">
+                          <div key={weekKey} className="min-w-0 space-y-3">
+                            <div className="sticky top-6 z-10 border-b border-slate-200 bg-slate-50 py-2 text-sm text-slate-900">
                               <div className="flex gap-1 justify-between">
                                 <span className="font-semibold">{weekLabel}</span>
                                 <span className="text-slate-600 "> ₹{weekTotals[weekKey]?.toFixed(2) ?? "0.00"}</span>
@@ -391,7 +391,7 @@ function App() {
                                     key={expense.id}
                                     className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm"
                                   >
-                                    <div className="flex gap-2 p-2 flex-row items-center">
+                                    <div className="flex flex-row items-center gap-2 p-1.5 sm:p-2">
                                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-900 text-center text-white">
                                         <div>
                                           <span className="block font-semibold leading-none">{formattedDate.day}</span>

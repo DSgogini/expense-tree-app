@@ -73,12 +73,12 @@ export default function SpaceLanding({ spaces, loading, onEnterSpace, onCreateSp
 
     return (
         <>
-            <div className="flex min-h-full min-h-[100dvh] w-full flex-col items-center justify-center px-4 py-10 sm:px-8">
-                <h1 className="mb-8 text-center text-3xl font-normal tracking-wide text-white sm:mb-12 sm:text-4xl md:text-5xl">
+            <div className="flex w-full max-w-4xl -translate-y-4 flex-col items-center sm:-translate-y-6">
+                <h1 className="mb-6 text-center text-3xl font-normal tracking-wide text-white sm:mb-10 sm:text-4xl md:text-5xl">
                     Who&apos;s using Expense Tree?
                 </h1>
 
-                <div className="flex w-full max-w-4xl flex-wrap items-start justify-center gap-4 sm:gap-6 md:gap-8">
+                <div className="flex w-full flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
                     {loading ? (
                         Array.from({ length: 3 }).map((_, index) => <ProfileSkeleton key={index} />)
                     ) : (
@@ -95,7 +95,7 @@ export default function SpaceLanding({ spaces, loading, onEnterSpace, onCreateSp
                                     >
                                         {spaceInitial(space.name)}
                                     </div>
-                                    <span className="max-w-full truncate text-sm text-[#808080] transition group-hover:text-white sm:text-base">
+                                    <span className="max-w-full truncate text-xs text-[#808080] transition group-hover:text-white sm:text-base">
                                         {space.name}
                                     </span>
                                 </button>
@@ -109,7 +109,7 @@ export default function SpaceLanding({ spaces, loading, onEnterSpace, onCreateSp
                                 <div className="flex h-[84px] w-[84px] items-center justify-center rounded bg-[#2f2f2f] text-4xl text-[#808080] ring-2 ring-transparent transition duration-200 group-hover:scale-110 group-hover:text-white group-hover:ring-white sm:h-[132px] sm:w-[132px] sm:text-5xl">
                                     +
                                 </div>
-                                <span className="text-sm text-[#808080] transition group-hover:text-white sm:text-base">
+                                <span className="text-xs text-[#808080] transition group-hover:text-white sm:text-base">
                                     Add Space
                                 </span>
                             </button>
