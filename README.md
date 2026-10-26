@@ -1,4 +1,4 @@
-# Expense Tree App
+# Personal Expense Management App
 
 This repository is a React + TypeScript + Vite expense tracker with Firebase Authentication, Firestore persistence, and Tailwind CSS styling.
 
